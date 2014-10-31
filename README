@@ -4,6 +4,7 @@ Dancer
 Net::Twitter::Lite::WithAPIv1_1
 Net::OAuth
 Mozilla::CA
+HTML::Entities
 
 Known Issues:
 * Program assumes valid input. Net::Twitter::Lite::WithAPIv1_1 doesn't seem

@@ -24,15 +24,22 @@ my $nt = Net::Twitter::Lite::WithAPIv1_1->new(
 
 get('/', sub {
   return <<HTML;
-<form name="input1" action="tweets" method="post">
-Username: <input type="text" name="user">
-<input type="submit" value="Submit">
-</form>
-<p />
-<form name="input2" action="common_friends" method="post">
-Username1: <input type="text" name="user1"> Username2: <input type="text" name="user2">
-<input type="submit" value="Submit">
-</form>
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Lookup Recent Tweets</h2>
+    <form name="input1" action="tweets" method="post">
+      Username: <input type="text" name="user">
+      <input type="submit" value="Submit">
+    </form>
+    <p />
+    <h2>Find Common Friends</h2>
+    <form name="input2" action="common_friends" method="post">
+      Username1: <input type="text" name="user1"> Username2: <input type="text" name="user2">
+      <input type="submit" value="Submit">
+    </form>
+  </body>
+</html>
 HTML
 });
 
@@ -44,22 +51,33 @@ post('/tweets', sub {
   }
 
   my $ret = $nt->user_timeline({screen_name => [$user]});
-  # XXX error checking
+  # XXX error checking should go here, but Net::Twitter::Lite::WithAPIv1_1 has minimal
+  #     support for error handling.
   my @tweets = map { encode_entities($_->{text}) } @$ret;
   my $output = join "\n", (
   	'<table>',
   	(map { "  <tr><td>$_</td></tr>" } @tweets),
   	'</table>',
   );
-  # warn $output # XXX;
-  return $output;
+
+  return join "\n", (
+    '<!DOCTYPE html>',
+    '<html>',
+    '<body>',
+    $output,
+    '</body>',
+    '</html>',
+  );
 });
 
 post('/common_friends', sub {
   my ($user1, $user2) = (param('user1'), param('user2'));
 
   unless ($user1 && $user2) {
-    return 'Invalid inputs: ' . ($user1 || '<empty>') . ' & ' . ($user2 || '<empty>')
+    return 'Invalid inputs: ' . ($user1 || '&lt;empty&gt;') . ' & ' . ($user2 || '&lt;empty&gt;')
+  }
+  if ($user1 eq $user2) {
+    return "Nice try, both user1 and user2 are the same user ($user1)";
   }
 
   my @friends1 = get_friends($user1);
@@ -67,11 +85,19 @@ post('/common_friends', sub {
   my @intersect = intersection(\@friends1, \@friends2);
 
   my $users = $nt->lookup_users({user_id => \@intersect});
-  # XXX check for errors
-  return join "\n", (
+  my $output = join "\n", (
     '<table>',
     (map { "  <tr><td>$_->{name}</td></tr>" } @$users),
     '</table>',
+  );
+
+  return join "\n", (
+    '<!DOCTYPE html>',
+    '<html>',
+    '<body>',
+    $output,
+    '</body>',
+    '</html>',
   );
 });
 
@@ -91,7 +117,6 @@ sub get_friends {
       count => 5000,
       cursor => $ret->{next_cursor} // -1,
     });
-    # XXX check for errors
     push @friends, @{$ret->{ids}};
   } while ($ret->{next_cursor});
   return @friends;
