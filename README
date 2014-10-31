@@ -4,3 +4,8 @@ Dancer
 Net::Twitter::Lite::WithAPIv1_1
 Net::OAuth
 Mozilla::CA
+
+Known Issues:
+* Program assumes valid input. Net::Twitter::Lite::WithAPIv1_1 doesn't seem
+  to do too well with invalid Twitter usernames.
+* No support for emoji characters.
