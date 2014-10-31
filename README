@@ -1,0 +1,6 @@
+Dependencies to install from CPAN to run twitter_stats.pl:
+
+Dancer
+Net::Twitter::Lite::WithAPIv1_1
+Net::OAuth
+Mozilla::CA
